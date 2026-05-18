@@ -10,13 +10,21 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 class MainApplication : Application(), ReactApplication {
 
   override val reactHost: ReactHost by lazy {
+    val bundleFile = java.io.File(applicationContext.filesDir, "latest.bundle")
+    val validFile = java.io.File(applicationContext.filesDir, "latest.bundle.valid")
+    
+    val jsBundleFilePath = if (bundleFile.exists() && validFile.exists()) {
+        android.util.Log.d("OTA", "Loading OTA bundle: ${bundleFile.absolutePath}")
+        bundleFile.absolutePath
+    } else {
+        android.util.Log.d("OTA", "OTA bundle not found or invalid, falling back to APK bundle")
+        null
+    }
+
     getDefaultReactHost(
-      context = applicationContext,
-      packageList =
-        PackageList(this).packages.apply {
-          // Packages that cannot be autolinked yet can be added manually here, for example:
-          // add(MyReactNativePackage())
-        },
+      applicationContext,
+      PackageList(this).packages,
+      jsBundleFilePath = jsBundleFilePath
     )
   }
 
